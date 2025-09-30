@@ -1,0 +1,19 @@
+# Virtual Environment
+venv/
+env/
+*.pyc
+__pycache__/
+
+# Authentication files (sensitive)
+auth/ytmusic_auth.json
+auth/oauth.json
+
+# Python cache
+*.py[cod]
+*$py.class
+.Python
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/

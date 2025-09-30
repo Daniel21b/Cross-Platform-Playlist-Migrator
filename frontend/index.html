@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Playlist Migrator</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1 class="title">Playlist Migrator</h1>
+      <p class="subtitle">Transfer your music between platforms</p>
+    </header>
+
+    <section class="how-it-works-section">
+      <button class="how-it-works-toggle" id="how-it-works-toggle">
+        <span class="toggle-icon">📚</span>
+        <span class="toggle-text">How It Works - Learn About The System</span>
+        <span class="toggle-chevron">▼</span>
+      </button>
+      
+      <div class="how-it-works-content hidden" id="how-it-works-content">
+        <div class="accordion">
+          
+          <!-- System Overview -->
+          <div class="accordion-item">
+            <button class="accordion-header">
+              <span>🎯 System Overview</span>
+              <span class="accordion-chevron">▼</span>
+            </button>
+            <div class="accordion-content">
+              <div>
+              <h3>What Does This Project Do?</h3>
+              <p>The Cross-Platform Playlist Migrator allows users to transfer their music playlists between <strong>Spotify</strong> and <strong>YouTube Music</strong>. It:</p>
+              <ul>
+                <li>✅ Authenticates with both platforms</li>
+                <li>✅ Fetches playlists and tracks</li>
+                <li>✅ Matches tracks across platforms using smart algorithms</li>
+                <li>✅ Creates new playlists on the destination platform</li>
+                <li>✅ Shows real-time progress during migration</li>
+              </ul>
+              <h3>Key Technologies</h3>
+              <ul>
+                <li><strong>Frontend:</strong> Vanilla JavaScript, HTML5, CSS3</li>
+                <li><strong>Backend:</strong> Node.js + Express.js</li>
+                <li><strong>Spotify Integration:</strong> Official Spotify Web API (OAuth 2.0)</li>
+                <li><strong>YouTube Music Integration:</strong> ytmusicapi (Python) via child processes</li>
+                <li><strong>Session Management:</strong> express-session (server-side)</li>
+              </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Architecture -->
+          <div class="accordion-item">
+            <button class="accordion-header">
+              <span>🏗️ Architecture</span>
+              <span class="accordion-chevron">▼</span>
+            </button>
+            <div class="accordion-content">
+              <div>
+              <h3>High-Level Architecture</h3>
+              <pre><code>┌─────────────────────────────────────────────────┐
+│              User's Browser                      │
+│  ┌───────────────────────────────────────────┐  │
+│  │    Frontend (HTML/CSS/JS)                 │  │
+│  │    - index.html (UI)                      │  │
+│  │    - main.js (App logic)                  │  │
+│  │    - api.js (API client)                  │  │
+│  └───────────────┬───────────────────────────┘  │
+└──────────────────┼──────────────────────────────┘
+                   │ HTTP/JSON
+                   ↓
+┌─────────────────────────────────────────────────┐
+│       Node.js Backend (Express.js)               │
+│  ┌──────────┐          ┌──────────┐            │
+│  │Controllers│    →     │ Services │            │
+│  │- auth    │          │- spotify │            │
+│  │- migration│          │- youtube │            │
+│  └──────────┘          │- migration│            │
+│                         └─────┬────┘            │
+│                               │                 │
+│                        Child Process            │
+│                               ↓                 │
+│                  ┌────────────────────┐        │
+│                  │  Python Service     │        │
+│                  │  (ytmusicapi)       │        │
+│                  └────────────────────┘        │
+└─────────────────────────────────────────────────┘
+           │                      │
+           ↓                      ↓
+   ┌──────────────┐   ┌──────────────┐
+   │ Spotify API  │   │YouTube Music │
+   │  (Official)  │   │ (ytmusicapi) │
+   └──────────────┘   └──────────────┘</code></pre>
+              <h3>Why This Architecture?</h3>
+              <p><strong>Hybrid Approach:</strong></p>
+              <ul>
+                <li><strong>Spotify:</strong> Uses official OAuth API → Node.js handles directly</li>
+                <li><strong>YouTube Music:</strong> No official API → Python ytmusicapi library (most reliable)</li>
+                <li><strong>Bridge:</strong> Node.js spawns Python scripts as child processes</li>
+              </ul>
+              <p><strong>Benefits:</strong></p>
+              <ul>
+                <li>✅ Best library for each platform</li>
+                <li>✅ Simple integration</li>
+                <li>✅ Easy to maintain</li>
+                <li>✅ Good performance for this use case</li>
+              </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Authentication Flow -->
+          <div class="accordion-item">
+            <button class="accordion-header">
+              <span>🔐 Authentication Flow</span>
+              <span class="accordion-chevron">▼</span>
+            </button>
+            <div class="accordion-content">
+              <div>
+              <h3>Spotify Authentication (OAuth 2.0)</h3>
+              <p><strong>Step-by-Step Process:</strong></p>
+              <ol>
+                <li>User clicks "Connect to Spotify"</li>
+                <li>Frontend calls: <code>GET /auth/spotify</code></li>
+                <li>Backend generates random state for CSRF protection and builds OAuth URL</li>
+                <li>Frontend redirects user to Spotify login page</li>
+                <li>User logs into Spotify and authorizes app</li>
+                <li>Spotify redirects back to: <code>/auth/spotify/callback?code=...&state=...</code></li>
+                <li>Backend verifies state, exchanges code for tokens, stores in session</li>
+                <li>Frontend updates UI to show "Connected"</li>
+              </ol>
+              <h3>Security Features</h3>
+              <ul>
+                <li>✅ State parameter prevents CSRF attacks</li>
+                <li>✅ Tokens stored server-side (never exposed to client)</li>
+                <li>✅ HTTP-only session cookies</li>
+                <li>✅ Automatic token refresh before expiry</li>
+              </ul>
+              <h3>YouTube Music Authentication</h3>
+              <p><strong>Why Different?</strong> YouTube Music has no official API. We use ytmusicapi which reverse-engineers the YouTube Music web interface.</p>
+              <p><strong>One-Time Setup (Terminal):</strong></p>
+              <pre><code>cd python-service
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python3 auth_setup.py</code></pre>
+              <p>After setup, the authentication file is saved and no per-request authentication is needed.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Migration Process -->
+          <div class="accordion-item">
+            <button class="accordion-header">
+              <span>🎵 Migration Process</span>
+              <span class="accordion-chevron">▼</span>
+            </button>
+            <div class="accordion-content">
+              <div>
+              <h3>Overview</h3>
+              <p>The migration process converts a playlist from one platform to another by:</p>
+              <ol>
+                <li>Fetching all tracks from source playlist</li>
+                <li>Searching for each track on destination platform</li>
+                <li>Matching tracks using fuzzy algorithms</li>
+                <li>Creating a new playlist on destination</li>
+                <li>Adding all matched tracks</li>
+              </ol>
+              <h3>Detailed Steps</h3>
+              <ol>
+                <li><strong>User Initiates Migration:</strong> Selects source platform, playlist, and destination</li>
+                <li><strong>Frontend Sends Request:</strong> <code>POST /api/migrate</code> with migration details</li>
+                <li><strong>Backend Starts Migration:</strong> Returns migration ID immediately</li>
+                <li><strong>Migration Service Orchestrates:</strong>
+                  <ul>
+                    <li>Gets valid tokens</li>
+                    <li>Creates service instances</li>
+                    <li>Fetches source tracks</li>
+                    <li>Creates destination playlist</li>
+                    <li>Matches and collects tracks</li>
+                    <li>Adds matched tracks to playlist</li>
+                  </ul>
+                </li>
+                <li><strong>Frontend Polls for Progress:</strong> Updates UI every 2 seconds with migration status</li>
+              </ol>
+              </div>
+            </div>
+          </div>
+
+          <!-- Track Matching Algorithm -->
+          <div class="accordion-item">
+            <button class="accordion-header">
+              <span>🎯 Track Matching Algorithm</span>
+              <span class="accordion-chevron">▼</span>
+            </button>
+            <div class="accordion-content">
+              <div>
+              <h3>How Tracks Are Matched Across Platforms</h3>
+              <p><strong>Challenge:</strong> Different platforms have different metadata formats, song titles may have variations, and artist names may differ slightly.</p>
+              <p><strong>Solution:</strong> Fuzzy matching with scoring system</p>
+              <h3>Matching Process</h3>
+              <p><strong>Step 1: Normalize Strings</strong></p>
+              <pre><code>function normalize(str) {
+  return str
+    .toLowerCase()
+    .replace(/[^\w\s]/g, '') // Remove special chars
+    .replace(/\s+/g, ' ')     // Normalize whitespace
+    .trim();
+}</code></pre>
+              <p><strong>Step 2: Build Search Queries</strong></p>
+              <p>From a source track like "Bohemian Rhapsody" by "Queen", generate:</p>
+              <ul>
+                <li>"Queen - Bohemian Rhapsody" (Artist - Song)</li>
+                <li>"Bohemian Rhapsody Queen" (Song Artist)</li>
+                <li>"Bohemian Rhapsody" (Just song)</li>
+              </ul>
+              <p><strong>Step 3: Calculate Match Score</strong></p>
+              <ul>
+                <li><strong>Title Match:</strong> Up to 50 points (30 for partial, +20 for exact)</li>
+                <li><strong>Artist Match:</strong> Up to 20 points</li>
+                <li><strong>Threshold:</strong> Score ≥ 50 is considered a match</li>
+              </ul>
+              <p><strong>Example:</strong></p>
+              <ul>
+                <li>"Bohemian Rhapsody" by "Queen" → 70 points ✅ MATCH!</li>
+                <li>"Bohemian Rhapsody (Remastered)" by "Queen" → 50 points ✅ MATCH!</li>
+                <li>"Radio Ga Ga" by "Queen" → 20 points ❌ NO MATCH</li>
+              </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Data Flow -->
+          <div class="accordion-item">
+            <button class="accordion-header">
+              <span>🔄 Data Flow</span>
+              <span class="accordion-chevron">▼</span>
+            </button>
+            <div class="accordion-content">
+              <div>
+              <h3>Complete End-to-End Flow</h3>
+              <p><strong>Scenario:</strong> User migrates "My Favorites" from Spotify → YouTube Music</p>
+              <ol>
+                <li><strong>User Action:</strong> Clicks "Start Migration"</li>
+                <li><strong>Frontend:</strong> Sends POST request to <code>/api/migrate</code></li>
+                <li><strong>Backend Controller:</strong> Receives request, calls migration service, returns migration ID</li>
+                <li><strong>Migration Service (Async Background):</strong>
+                  <ul>
+                    <li>Gets tokens (Spotify access token)</li>
+                    <li>Creates service instances (SpotifyService, YouTubeMusicService)</li>
+                    <li>Fetches source tracks from Spotify API</li>
+                    <li>Creates destination playlist via Python → ytmusicapi</li>
+                    <li>For each track: Search YouTube Music, calculate score, match</li>
+                    <li>Add all matched tracks to playlist</li>
+                    <li>Mark as complete</li>
+                  </ul>
+                </li>
+                <li><strong>Frontend Polling:</strong> Every 2 seconds, polls <code>GET /api/migrate/status/:id</code> and updates UI with progress</li>
+              </ol>
+              </div>
+            </div>
+          </div>
+
+          <!-- Code Structure -->
+          <div class="accordion-item">
+            <button class="accordion-header">
+              <span>📂 Code Structure</span>
+              <span class="accordion-chevron">▼</span>
+            </button>
+            <div class="accordion-content">
+              <div>
+              <h3>File Organization</h3>
+              <pre><code>Cross-Platform-Playlist-Migrator/
+├── backend/              # Node.js backend
+│   ├── src/
+│   │   ├── config/       # Configuration files
+│   │   ├── controllers/  # Request handlers
+│   │   ├── services/     # Business logic
+│   │   ├── utils/        # Helper functions
+│   │   ├── middleware/   # Express middleware
+│   │   ├── routes/       # API routes
+│   │   └── server.js     # Entry point
+│   └── package.json
+│
+├── python-service/       # Python YouTube Music service
+│   ├── ytmusic_service.py
+│   ├── auth_setup.py
+│   └── requirements.txt
+│
+├── frontend/             # Client application
+│   ├── index.html
+│   ├── js/
+│   │   ├── api.js        # API client
+│   │   └── main.js       # App logic
+│   └── css/
+│       └── styles.css
+│
+└── docs/                 # Documentation</code></pre>
+              <h3>Key Components</h3>
+              <ul>
+                <li><strong>auth.controller.js:</strong> Handles OAuth flows</li>
+                <li><strong>migration.service.js:</strong> Orchestrates migration process</li>
+                <li><strong>spotify.service.js:</strong> Spotify API wrapper</li>
+                <li><strong>youtube.service.js:</strong> Node.js → Python bridge</li>
+                <li><strong>ytmusic_service.py:</strong> Python CLI for YouTube Music operations</li>
+              </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Technical Implementation -->
+          <div class="accordion-item">
+            <button class="accordion-header">
+              <span>🔧 Technical Implementation</span>
+              <span class="accordion-chevron">▼</span>
+            </button>
+            <div class="accordion-content">
+              <div>
+              <h3>Session Management</h3>
+              <p><strong>Why Sessions?</strong></p>
+              <ul>
+                <li>Tokens stored server-side (more secure)</li>
+                <li>HTTP-only cookies prevent XSS attacks</li>
+                <li>Automatic token refresh without client interaction</li>
+              </ul>
+              <h3>Python-Node.js Bridge</h3>
+              <p>Node.js spawns Python child processes to execute YouTube Music operations:</p>
+              <pre><code>const pythonProcess = spawn('python3', [
+  'ytmusic_service.py',
+  command,
+  ...args
+]);
+// Collects JSON output from Python script</code></pre>
+              <h3>Error Handling</h3>
+              <p>Layered error handling across service, controller, and global middleware levels ensures robust error management.</p>
+              <h3>Real-time Progress Tracking</h3>
+              <p>Migration state stored in memory (Map), updated during migration, and polled by frontend every 2 seconds for real-time UI updates.</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <section class="auth-section">
+      <div class="auth-card">
+        <div class="platform-header">
+          <svg class="platform-icon" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+          </svg>
+          <h3>Spotify</h3>
+        </div>
+        <div id="spotify-status" class="status-indicator disconnected">
+          <span class="status-dot"></span>
+          <span class="status-text">Not Connected</span>
+        </div>
+        <button id="spotify-connect" class="btn btn-spotify">
+          Connect to Spotify
+        </button>
+      </div>
+
+      <div class="auth-card">
+        <div class="platform-header">
+          <svg class="platform-icon" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+          </svg>
+          <h3>YouTube Music</h3>
+        </div>
+        <div id="youtube-status" class="status-indicator disconnected">
+          <span class="status-dot"></span>
+          <span class="status-text">Not Connected</span>
+        </div>
+        <button id="youtube-connect" class="btn btn-youtube">
+          Connect to YouTube Music
+        </button>
+      </div>
+    </section>
+
+    <section id="migration-section" class="migration-section hidden">
+      <div class="migration-card">
+        <h2 class="section-title">Select Playlist to Migrate</h2>
+        
+        <div class="form-group">
+          <label for="source-platform">Source Platform</label>
+          <select id="source-platform" class="select-input">
+            <option value="">Select source...</option>
+            <option value="spotify">Spotify</option>
+            <option value="youtubeMusic">YouTube Music</option>
+          </select>
+        </div>
+
+        <div id="playlist-selection" class="form-group hidden">
+          <label for="playlist-select">Select Playlist</label>
+          <select id="playlist-select" class="select-input">
+            <option value="">Loading playlists...</option>
+          </select>
+        </div>
+
+        <div id="destination-selection" class="form-group hidden">
+          <label for="destination-platform">Destination Platform</label>
+          <select id="destination-platform" class="select-input">
+            <option value="">Select destination...</option>
+          </select>
+        </div>
+
+        <button id="migrate-btn" class="btn btn-primary hidden" disabled>
+          Start Migration
+        </button>
+      </div>
+    </section>
+
+    <section id="progress-section" class="progress-section hidden">
+      <div class="progress-card">
+        <h2 class="section-title">Migration Progress</h2>
+        
+        <div class="progress-stats">
+          <div class="stat">
+            <span class="stat-label">Status</span>
+            <span id="migration-status" class="stat-value">Starting...</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">Progress</span>
+            <span id="migration-progress" class="stat-value">0/0</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">Matched</span>
+            <span id="migration-matched" class="stat-value success">0</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">Failed</span>
+            <span id="migration-failed" class="stat-value error">0</span>
+          </div>
+        </div>
+
+        <div class="progress-bar-container">
+          <div id="progress-bar" class="progress-bar"></div>
+        </div>
+
+        <div id="track-list" class="track-list"></div>
+
+        <div id="migration-complete" class="completion-message hidden">
+          <div class="success-icon">✓</div>
+          <h3>Migration Complete!</h3>
+          <p id="completion-message"></p>
+          <a id="playlist-link" href="#" target="_blank" class="btn btn-link hidden">
+            Open Playlist
+          </a>
+          <button id="new-migration-btn" class="btn btn-secondary">
+            Start New Migration
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <p>Cross-Platform Playlist Migrator</p>
+    </footer>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

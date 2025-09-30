@@ -1,0 +1,43 @@
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Node modules
+node_modules/
+backend/node_modules/
+
+# Python
+python-service/venv/
+python-service/env/
+python-service/__pycache__/
+python-service/*.pyc
+python-service/.Python
+
+# Authentication files (SENSITIVE)
+python-service/auth/ytmusic_auth.json
+python-service/auth/oauth.json
+backend/.env
+
+# Logs
+*.log
+npm-debug.log*
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Distribution
+dist/
+build/
+
+# Testing
+coverage/
+.nyc_output/
